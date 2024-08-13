@@ -1,29 +1,34 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Bar, BarChart, CartesianGrid, Legend, Tooltip, XAxis, YAxis } from "recharts";
 import * as Styled from './styles';
 
-export const BarC = ({ data }) => {
-  // Determine the year of the first record
+interface DataItem {
+  Date: Date;
+}
+
+interface BarCProps {
+  data: DataItem[];
+}
+
+export const BarC: React.FC<BarCProps> = ({ data }) => {
+
   const getFirstYear = () => {
     if (data.length > 0) {
-      return data[0]['Date'].getFullYear().toString();
+      return data[0].Date.getFullYear().toString();
     }
     return null;
   };
 
-  // Set the initial selected year to the year of the first record
   const [selectedYear, setSelectedYear] = useState<string | null>(getFirstYear());
 
-  // Filter data based on the selected year
   const filteredData = selectedYear
-    ? data.filter((item: { [x: string]: { getFullYear: () => number; }; }) => item['Date'] && item['Date'].getFullYear() === parseInt(selectedYear, 10))
+    ? data.filter(item => item.Date.getFullYear() === parseInt(selectedYear, 10))
     : data;
 
-  // Count records by year
-  const countRecordsByYear = (data: any[]) => {
-    const yearCounts = data.reduce((acc: { [x: string]: any; }, item: { [x: string]: { getFullYear: () => any; }; }) => {
-      if (item['Date']) {
-        const year = item['Date'].getFullYear();
+  const countRecordsByYear = (data: DataItem[]) => {
+    const yearCounts = data.reduce((acc: Record<number, number>, item) => {
+      if (item.Date) {
+        const year = item.Date.getFullYear();
         acc[year] = (acc[year] || 0) + 1;
       }
       return acc;
@@ -31,15 +36,14 @@ export const BarC = ({ data }) => {
 
     return Object.keys(yearCounts).map(year => ({
       year: year,
-      count: yearCounts[year]
+      count: yearCounts[parseInt(year)]
     }));
   };
 
-  // Count records by month
-  const countRecordsByMonth = (data: any[]) => {
-    const monthCounts = data.reduce((acc: { [x: string]: any; }, item: { [x: string]: { getMonth: () => number; }; }) => {
-      if (item['Date']) {
-        const month = item['Date'].getMonth() + 1;
+  const countRecordsByMonth = (data: DataItem[]) => {
+    const monthCounts = data.reduce((acc: Record<number, number>, item) => {
+      if (item.Date) {
+        const month = item.Date.getMonth() + 1;
         acc[month] = (acc[month] || 0) + 1;
       }
       return acc;
@@ -52,15 +56,13 @@ export const BarC = ({ data }) => {
     }));
   };
 
-  // Prepare data for the charts
   const dataForChart = countRecordsByYear(data);
-  
+
   const monthNames = [
     "Jan", "Feb", "Mar", "Apr", "May", "Jun",
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
   ];
 
-  // Handle year click event to filter data
   const handleYearClick = (data: { year: string }) => {
     if (data && data.year) {
       setSelectedYear(data.year);
@@ -68,7 +70,6 @@ export const BarC = ({ data }) => {
   };
 
   useEffect(() => {
-    // Automatically set the initial year when the component mounts
     if (!selectedYear && data.length > 0) {
       setSelectedYear(getFirstYear());
     }
