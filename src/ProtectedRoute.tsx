@@ -1,14 +1,16 @@
 import React from 'react';
-import { Route, Navigate, RouteProps } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { RootState } from '../src/state/store'; // Atualize com o caminho correto para o seu store
+import { RootState } from '../src/state/store'; 
 
-interface ProtectedRouteProps extends RouteProps {
+interface ProtectedRouteProps {
   element: React.ReactElement;
+
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ element, ...rest }) => {
-  const isAuthenticated = useSelector((state: RootState) => state.user.name);
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ element }) => {
+
+  const isAuthenticated = useSelector((state: RootState) => !!state.user.name); 
 
   return isAuthenticated ? element : <Navigate to="/" />;
 };
